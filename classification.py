@@ -3,7 +3,7 @@ import numpy as np
 import nltk
 from pyspark.sql import SparkSession
 from pyspark.ml import Pipeline
-from pyspark.ml.classification import LogisticRegression, LinearSVC, DecisionTreeClassifier
+from pyspark.ml.classification import LogisticRegression, LinearSVC, NaiveBayes
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import StopWordsRemover, RegexTokenizer, HashingTF
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
@@ -33,7 +33,7 @@ def main():
     tweets_df = process_text(tweets_df)
 
     # Splits data into training and test sets
-    tweets_df, unused_df = tweets_df.randomSplit([0.001, 0.999], 24)
+    #tweets_df, unused_df = tweets_df.randomSplit([0.001, 0.999], 24)
     training, test = tweets_df.randomSplit([0.8, 0.2], 24)
 
     # Creates transformers and evaluator used in pipelines
@@ -42,7 +42,7 @@ def main():
     hashingTF = HashingTF(inputCol=rtokenizer.getOutputCol(),
                           outputCol='features')
     evaluator = BinaryClassificationEvaluator()
-
+    '''
     # Creates logistic regression pipeline and cross validator
     lr = LogisticRegression()
     lr_grid = ParamGridBuilder() \
@@ -82,26 +82,25 @@ def main():
     # Output best lsvc model
     model_path = 's3://twitterworddashboard/lsvc_model.py'
     lsvc_model.write().overwrite().save(model_path)
-
-    # Creates random forest pipeline and cross validator
-    dt = DecisionTreeClassifier()
-    dt_grid = ParamGridBuilder() \
-        .addGrid(dt.maxDepth, [3, 5]) \
-        .addGrid(dt.maxBins, [2, 4]) \
+    '''
+    # Creates naive bayes pipeline and cross validator
+    nb = NaiveBayes()
+    nb_grid = ParamGridBuilder() \
+        .addGrid(nb.modelType, ['multinomial', 'gaussian']) \
         .build()
 
-    dt_pipeline = Pipeline(stages=[rtokenizer, hashingTF, dt])
-    dt_cv = CrossValidator(estimator=dt_pipeline,
-                           estimatorParamMaps=dt_grid,
+    nb_pipeline = Pipeline(stages=[rtokenizer, hashingTF, nb])
+    nb_cv = CrossValidator(estimator=nb_pipeline,
+                           estimatorParamMaps=nb_grid,
                            evaluator=evaluator,
                            numFolds=3)
-    dt_model = dt_cv.fit(training)
-    print(evaluator.evaluate(dt_model.transform(test)))
-    print('dt params: ' + str(dt_model.getEstimatorParamMaps()[np.argmax(dt_model.avgMetrics)]))
+    nb_model = nb_cv.fit(training)
+    print(evaluator.evaluate(nb_model.transform(test)))
+    print('nb params: ' + str(nb_model.getEstimatorParamMaps()[np.argmax(nb_model.avgMetrics)]))
 
-    # Output best dt model
-    model_path = 's3://twitterworddashboard/dt_model.py'
-    dt_model.write().overwrite().save(model_path)
+    # Output best nb model
+    model_path = 's3://twitterworddashboard/nb_model.py'
+    nb_model.write().overwrite().save(model_path)
 
 
 def process_text(df):
