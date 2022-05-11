@@ -11,16 +11,16 @@ from pyspark.sql.types import IntegerType
 from nltk.corpus import stopwords
 nltk.download('stopwords')
 
+path = 'tweets_sentiment_analysis.csv'
+#path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
+
 
 def main():
-    path = 'tweets_sentiment_analysis.csv'
-    path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
-
-    # Loads sentiment sheet into df
     spark = SparkSession.builder \
-        .master("local") \
         .appName("Print") \
         .getOrCreate()
+
+    # Loads sentiment sheet into df
     tweets_df = spark.read.option('header', False).csv(path)
 
     # Format tweet sentiment sheet
@@ -86,7 +86,7 @@ def main():
     # Creates naive bayes pipeline and cross validator
     nb = NaiveBayes()
     nb_grid = ParamGridBuilder() \
-        .addGrid(nb.modelType, ['multinomial', 'gaussian']) \
+        .addGrid(nb.modelType, ['multinomial']) \
         .build()
 
     nb_pipeline = Pipeline(stages=[rtokenizer, hashingTF, nb])
@@ -97,10 +97,11 @@ def main():
     nb_model = nb_cv.fit(training)
     print(evaluator.evaluate(nb_model.transform(test)))
     print('nb params: ' + str(nb_model.getEstimatorParamMaps()[np.argmax(nb_model.avgMetrics)]))
-
+    '''
     # Output best nb model
     model_path = 's3://twitterworddashboard/nb_model.py'
     nb_model.write().overwrite().save(model_path)
+    '''
 
 
 def process_text(df):
