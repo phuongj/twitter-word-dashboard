@@ -13,7 +13,7 @@ nltk.download('stopwords')
 
 
 def main():
-    #path = 'tweets_sentiment_analysis.csv'
+    path = 'tweets_sentiment_analysis.csv'
     path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
 
     # Loads sentiment sheet into df
@@ -33,7 +33,7 @@ def main():
     tweets_df = process_text(tweets_df)
 
     # Splits data into training and test sets
-    #tweets_df, unused_df = tweets_df.randomSplit([0.001, 0.999], 24)
+    tweets_df, unused_df = tweets_df.randomSplit([0.001, 0.999], 24)
     training, test = tweets_df.randomSplit([0.8, 0.2], 24)
 
     # Creates transformers and evaluator used in pipelines
@@ -63,11 +63,11 @@ def main():
     model_path = 's3://twitterworddashboard/lr_model.py'
     lr_model.write().overwrite().save(model_path)
 
-    # Creates naive bayes pipeline and cross validator
+    # Creates SVC pipeline and cross validator
     lsvc = LinearSVC()
     lsvc_grid = ParamGridBuilder() \
-        .addGrid(lsvc.maxIter, [5, 10]) \
-        .addGrid(lsvc.regParam, [0.0, 0.1]) \
+        .addGrid(lsvc.maxIter, [10]) \
+        .addGrid(lsvc.regParam, [0.0]) \
         .build()
 
     lsvc_pipeline = Pipeline(stages=[rtokenizer, hashingTF, lsvc])
