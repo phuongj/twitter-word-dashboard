@@ -4,7 +4,7 @@ from tweepy import StreamingClient, StreamRule
 
 
 bearer_token = 'AAAAAAAAAAAAAAAAAAAAABDYcQEAAAAAQyv9Elq%2BmiR12ZsEYl5oAH0YcPw%3DjHNjsnwHpgxGD4cum34XG9Xy8Jxyyl21KXlueKoUpsILCibgni'
-
+#
 
 def main():
     s = socket.socket()

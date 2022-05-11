@@ -12,7 +12,7 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 
 path = 'tweets_sentiment_analysis.csv'
-#path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
+##path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
 
 
 def main():
