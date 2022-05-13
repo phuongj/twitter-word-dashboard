@@ -34,6 +34,9 @@ def main():
     # Tweet text processing: remove stop words, remove user tags, web urls, numbers, symbols
     tweets_df = process_text(tweets_df)
 
+    # Change nonzero label values to 1
+    tweets_df = tweets_df.withColumn('label', F.when(tweets_df.label == 0, tweets_df.label).otherwise(1))
+
     # Splits data into training and test sets
     #tweets_df, unused_df = tweets_df.randomSplit([0.001, 0.999], 24)
     training, test = tweets_df.randomSplit([0.8, 0.2], 24)
@@ -131,9 +134,6 @@ def process_text(df):
         .drop('tweet').withColumnRenamed('tweet formatted', 'tweet')
     df = df.filter(F.size('tweet') > 0)
     df = df.withColumn('tweet', F.concat_ws(' ', 'tweet'))
-
-    # Change nonzero label values to 1
-    df = df.withColumn('label', F.when(df.label == 0, df.label).otherwise(1))
 
     return df
 

@@ -1,4 +1,5 @@
 import pyspark.sql.functions as F
+from classification import process_text
 from pyspark.sql import SparkSession
 
 
@@ -17,15 +18,14 @@ def main():
 
     words = lines.select(
         F.explode(
-            F.split(lines.value, ' ')
-        ).alias('word')
+            F.split(lines.value, 't_end')
+        ).alias('tweet')
     )
 
-    wordCounts = words.groupBy("word").count()
+    words = process_text(words)
 
-    query = wordCounts \
+    query = words \
         .writeStream \
-        .outputMode('complete') \
         .format('console') \
         .start()
 

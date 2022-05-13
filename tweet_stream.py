@@ -2,12 +2,10 @@ import socket
 import json
 from tweepy import StreamingClient, StreamRule
 
-
-bearer_token = 'AAAAAAAAAAAAAAAAAAAAABDYcQEAAAAAQyv9Elq%2BmiR12ZsEYl5oAH0YcPw%3DjHNjsnwHpgxGD4cum34XG9Xy8Jxyyl21KXlueKoUpsILCibgni'
+bearer_token = 'AAAAAAAAAAAAAAAAAAAAAOQxcgEAAAAAMbkrXWAjBEnYH1nbQtBLzVcohHU%3DAYD2w0B1VPi1CR1W6D6grpMDCuA0MUeyhHZP5ZPUjKPCM1y6XS'
 
 
 def main():
-
     s = socket.socket()
     host = '0.0.0.0'
     port = 9999
@@ -24,9 +22,17 @@ def send_data(c_socket, filter_word):
     streaming_client = TweetListener(
         bearer_token=bearer_token,
         csocket=c_socket)
-    streaming_client.add_rules(StreamRule(filter_word))
-    #streaming_client.filter()
-    streaming_client.sample()
+    #streaming_client.add_rules(StreamRule(filter_word))
+    streaming_client.add_rules(StreamRule("fish lang:en"))
+    #streaming_client.delete_rules('1525077818727464961')
+    streaming_client.filter()
+
+    #streaming_client.sample()
+
+
+def process_tweet(tweet):
+    tweet = tweet.replace('RT ', '')
+    return tweet
 
 
 class TweetListener(StreamingClient):
@@ -43,11 +49,19 @@ class TweetListener(StreamingClient):
             # Extended tweets are contained in full_text rather than text
             if 'extended_tweet' in tweet['data']:
                 self.client_socket \
-                    .send(str(tweet['data']['extended_tweet']['full_text'] + 't_end').encode('utf-8'))
+                    .send(
+                        process_tweet(
+                            str(tweet['data']['extended_tweet']['full_text'] + 't_end')
+                        ).encode('utf-8')
+                    )
                 print(str(tweet['data']['extended_tweet']['full_text']))
             else:
                 self.client_socket \
-                    .send(str(tweet['data']['text'] + 't_end').encode('utf-8'))
+                    .send(
+                        process_tweet(
+                            str(tweet['data']['text'] + 't_end')
+                        ).encode('utf-8')
+                    )
                 print(str(tweet['data']['text'] + 't_end'))
         except BaseException as e:
             print('Error in on_data: ' + str(e))
