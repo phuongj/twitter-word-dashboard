@@ -9,14 +9,16 @@ from pyspark.ml.feature import StopWordsRemover, RegexTokenizer, HashingTF
 from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 from pyspark.sql.types import IntegerType
 from nltk.corpus import stopwords
+
 nltk.download('stopwords')
 
 path = 'tweets_sentiment_analysis.csv'
-##path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
+#path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
 
 
 def main():
-    spark = SparkSession.builder \
+    spark = SparkSession \
+        .builder \
         .appName("Print") \
         .getOrCreate()
 
