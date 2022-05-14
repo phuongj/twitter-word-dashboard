@@ -12,8 +12,11 @@ from nltk.corpus import stopwords
 
 nltk.download('stopwords')
 
-#path = 'tweets_sentiment_analysis.csv'
-path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
+# See read me for variable details
+path = 's3://'
+lr_path = 's3://'
+lscv_path = 's3://'
+nb_path = 's3://'
 
 
 def main():
@@ -38,7 +41,6 @@ def main():
     tweets_df = tweets_df.withColumn('label', F.when(tweets_df.label == 0, tweets_df.label).otherwise(1))
 
     # Splits data into training and test sets
-    #tweets_df, unused_df = tweets_df.randomSplit([0.001, 0.999], 24)
     training, test = tweets_df.randomSplit([0.8, 0.2], 24)
 
     # Creates transformers and evaluator used in pipelines
@@ -47,7 +49,7 @@ def main():
     hashingTF = HashingTF(inputCol=rtokenizer.getOutputCol(),
                           outputCol='features')
     evaluator = BinaryClassificationEvaluator()
-    '''
+
     # Creates logistic regression pipeline and cross validator
     lr = LogisticRegression()
     lr_grid = ParamGridBuilder() \
@@ -61,13 +63,14 @@ def main():
                            evaluator=evaluator,
                            numFolds=3)
     lr_model = lr_cv.fit(training)
-    print(evaluator.evaluate(lr_model.transform(test)))
+    lr_result = lr_model.transform(test)
+    print(evaluator.evaluate(lr_result))
     print('lr params: ' + str(lr_model.getEstimatorParamMaps()[np.argmax(lr_model.avgMetrics)]))
 
     # Output best lr model
-    model_path = 's3://twitterworddashboard/lr_model.py'
+    model_path = lr_path
     lr_model.write().overwrite().save(model_path)
-    '''
+
     # Creates SVC pipeline and cross validator
     lsvc = LinearSVC()
     lsvc_grid = ParamGridBuilder() \
@@ -81,13 +84,14 @@ def main():
                              evaluator=evaluator,
                              numFolds=3)
     lsvc_model = lsvc_cv.fit(training)
-    print(evaluator.evaluate((lsvc_model.transform(test))))
+    lsvc_result = lsvc_model.transform(test)
+    print(evaluator.evaluate(lsvc_result))
     print('lsvc params: ' + str(lsvc_model.getEstimatorParamMaps()[np.argmax(lsvc_model.avgMetrics)]))
 
     # Output best lsvc model
-    model_path = 's3://twitterworddashboard/lsvc_model.py'
+    model_path = lscv_path
     lsvc_model.write().overwrite().save(model_path)
-    '''
+
     # Creates naive bayes pipeline and cross validator
     nb = NaiveBayes()
     nb_grid = ParamGridBuilder() \
@@ -100,13 +104,14 @@ def main():
                            evaluator=evaluator,
                            numFolds=3)
     nb_model = nb_cv.fit(training)
-    print(evaluator.evaluate(nb_model.transform(test)))
+    nb_result = nb_model.transform(test)
+    print(evaluator.evaluate(nb_result))
     print('nb params: ' + str(nb_model.getEstimatorParamMaps()[np.argmax(nb_model.avgMetrics)]))
 
     # Output best nb model
-    model_path = 's3://twitterworddashboard/nb_model.py'
+    model_path = nb_path
     nb_model.write().overwrite().save(model_path)
-    '''
+
 
 def process_text(df):
     stopword_list = stopwords.words('english')
