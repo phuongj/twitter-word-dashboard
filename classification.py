@@ -12,8 +12,8 @@ from nltk.corpus import stopwords
 
 nltk.download('stopwords')
 
-path = 'tweets_sentiment_analysis.csv'
-#path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
+#path = 'tweets_sentiment_analysis.csv'
+path = 's3://twitterworddashboard/tweets_sentiment_analysis.csv'
 
 
 def main():
@@ -67,7 +67,7 @@ def main():
     # Output best lr model
     model_path = 's3://twitterworddashboard/lr_model.py'
     lr_model.write().overwrite().save(model_path)
-
+    '''
     # Creates SVC pipeline and cross validator
     lsvc = LinearSVC()
     lsvc_grid = ParamGridBuilder() \
@@ -102,12 +102,11 @@ def main():
     nb_model = nb_cv.fit(training)
     print(evaluator.evaluate(nb_model.transform(test)))
     print('nb params: ' + str(nb_model.getEstimatorParamMaps()[np.argmax(nb_model.avgMetrics)]))
-    '''
+
     # Output best nb model
     model_path = 's3://twitterworddashboard/nb_model.py'
     nb_model.write().overwrite().save(model_path)
     '''
-
 
 def process_text(df):
     stopword_list = stopwords.words('english')

@@ -15,18 +15,16 @@ def main():
     print('Socket is listening.')
     c_socket, addr = s.accept()
     print("Connection established.")
-    send_data(c_socket, filter_word=['fish'])
+    send_data(c_socket, filter_word='data lang:en')
 
 
 def send_data(c_socket, filter_word):
     streaming_client = TweetListener(
         bearer_token=bearer_token,
         csocket=c_socket)
-    #streaming_client.add_rules(StreamRule(filter_word))
-    streaming_client.add_rules(StreamRule("fish lang:en"))
-    #streaming_client.delete_rules('1525077818727464961')
+    streaming_client.add_rules(StreamRule(value=filter_word))
+    #streaming_client.delete_rules('1525208910885359616')
     streaming_client.filter()
-
     #streaming_client.sample()
 
 
